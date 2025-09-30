@@ -1,0 +1,32 @@
+{
+  "total_comments": 10977,
+  "sentiment_distribution": {
+    "counts": {
+      "NEGATIVO": 9007,
+      "NEUTRO": 1871,
+      "POSITIVO": 99
+    },
+    "percentages": {
+      "NEGATIVO": 82.05,
+      "NEUTRO": 17.04,
+      "POSITIVO": 0.9
+    }
+  },
+  "sample_comments": {
+    "POSITIVO": [
+      "Tanta crítica de gente adulta a los Hexágonos . Pónganse en el lugar de un niño obeso o diabético y su familia. El tiempo y la angustia de tener que reeducar contra reloj y aprender a alimentarse desde cero La información es salud , cálidad de vida y un metabolismo controlado.",
+      "Tranqui no estoy mangueando, y con mi sobrepeso seguro que no entro en el buzo, rookie es todo un rockstar!",
+      "Totalmente cierto. Tener una buena destreza física no tiene q ver tanto con el físico sino más bien con el entrenamiento. Tenía mí profe de natación q era obeso y sin embargo hacía crol y patadas como nadie y así debe haber miles d entrenadores"
+    ],
+    "NEGATIVO": [
+      "Boluda ahí dice que yo debería pesar 43kg eso está para el orto. Yo sé que tengo sobrepeso y por eso estoy empezando a cuidarme más para bajar de peso, por mi altura mi peso ideal sería 64",
+      "Jugador de +30 años, vendehumo, con tendencias a lesionarse, con sobrepeso, tribunero y cabaretero. Nació para jugar en boca",
+      "yo, re pesada mal: EL UNIVERSO CONSPIRA A MI FAVOR GRACIAS, GRACIAS, GRACIAS"
+    ],
+    "NEUTRO": [
+      "Me puse una cartera usada que me regalaron y tenía $500 adentro olvidados. Tenía que venir al taller re cargada y no tenía efectivo más que eso, me pedí un auto y no entiendo cómo pero salió $472 un día de lluvia. Buen día que placer esta pavada",
+      "hoy me agrandé los expansores porque yo sigo viviendo en 2013",
+      "No sé la obesidad, pero el control glucémico mejoró porque me ayuda a detectar exceso de azúcares."
+    ]
+  }
+}
