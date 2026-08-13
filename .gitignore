@@ -1,1 +1,22 @@
+# Python / notebooks
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Entornos locales
+.venv/
+venv/
+env/
+obesidad-twitter-presentacion/
+
+# Modelos y artefactos pesados generados localmente
 practico_3/fasttext_twitter_custom.bin
+*.bin
+*.pkl
+
+# Datos locales no publicados. La demo publica usa su propio payload en site/data/.
+/data/
+
+# Archivos del sistema
+.DS_Store

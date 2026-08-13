@@ -1,6 +1,7 @@
-# Tweets sobre obesidad en Argentina: ¿De qué se habla?
+# Tweets sobre obesidad en Argentina
 
-### Descripción del proyecto
-La obesidad es reconocida en Argentina como un importante problema de salud pública. Existen campañas y programas, tanto a nivel nacional como provincial, que buscan reducir su prevalencia. Sin embargo, según datos de la Encuesta Nacional de Factores de Riesgo (ENFR), la tendencia sigue en aumento: en 2018, 6 de cada 10 personas presentaban exceso de peso, y 2 de esas 6 tenían obesidad.
-Frente a este panorama, este proyecto propone mirar el problema desde otra perspectiva: ¿qué se dice sobre la obesidad en las redes sociales? ¿Cómo se construye el discurso público sobre el tema? Se parte de la idea de que factores culturales y sociales también pueden influir en este fenómeno y que, al analizarlos, podríamos entender mejor por qué sigue creciendo.
-Para esto, trabajamos con un conjunto de datos compuesto por tweets que mencionan palabras clave relacionadas con la obesidad. Esta base incluye información como el contenido del tweet, la cantidad de likes, retweets, respuestas, citas, la fecha de publicación, el mes y la provincia desde donde fue publicado. A partir de este material, el proyecto busca explorar cómo se percibe y discute la obesidad en el espacio digital, qué temas predominan, qué emociones circulan y si existen diferencias regionales o temporales en la forma en que se habla del tema.
+Portfolio de análisis NLP de conversaciones públicas en Twitter/X: exploración, curación de texto, modelado de tópicos, sentimiento y lenguaje hostil.
+
+La demo estática se publica con GitHub Pages y no muestra textos completos ni identificadores de tweets.
+
+Las notebooks principales están en [`notebooks/`](notebooks/) y el material histórico —incluidas las presentaciones— en `notebooks/archive/`. Los datos de trabajo son locales y están ignorados por Git.

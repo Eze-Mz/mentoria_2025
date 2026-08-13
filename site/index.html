@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Obesidad en Twitter/X Argentina</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --ink: #1c2530;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --accent: #1f7a8c;
+      --accent-2: #bf5b45;
+      --accent-3: #5d6b2f;
+      --soft: #eef4f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      padding: 24px clamp(16px, 4vw, 44px) 18px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 42px); line-height: 1.08; letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 20px; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 15px; letter-spacing: 0; }
+    p { margin: 0; color: var(--muted); max-width: 960px; }
+    .meta-line { margin-top: 10px; color: var(--ink); font-size: 14px; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .tab, .topic-button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 6px;
+      cursor: pointer;
+      font: inherit;
+    }
+    .tab { min-height: 38px; padding: 0 13px; }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    main { padding: 20px clamp(16px, 4vw, 44px) 44px; }
+    .view { display: none; }
+    .view.active { display: block; }
+    section { margin-bottom: 16px; }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .analysis-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 330px) minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+    .report-layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
+    select {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 0 10px;
+      font: inherit;
+    }
+    .controls { display: grid; gap: 12px; }
+    .plot { width: 100%; height: 580px; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+    .small-plot { height: 300px; }
+    .term-list { display: grid; gap: 8px; }
+    .term-row { display: grid; grid-template-columns: minmax(92px, 150px) 1fr 48px; gap: 8px; align-items: center; font-size: 13px; }
+    .bar { height: 9px; background: #dbe9ec; border-radius: 99px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+    .note { color: var(--muted); font-size: 13px; margin-top: 10px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip { display: inline-flex; padding: 5px 8px; border-radius: 999px; background: var(--soft); color: #174e5a; font-size: 12px; }
+    .wordcloud-img { width: 100%; display: block; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: right; vertical-align: top; }
+    th:first-child, td:first-child { text-align: left; }
+    th { color: var(--muted); font-weight: 600; }
+    .topic-list { max-height: 640px; overflow: auto; display: grid; gap: 8px; }
+    .topic-button { padding: 10px; text-align: left; }
+    .topic-button.active { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+    .topic-button b { display: block; font-size: 13px; }
+    .topic-button span { color: var(--muted); font-size: 12px; }
+    .topic-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+      display: grid;
+      gap: 8px;
+    }
+    .example {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      display: grid;
+      gap: 6px;
+    }
+    .example p { color: var(--ink); font-size: 14px; }
+    @media (max-width: 1000px) {
+      header { grid-template-columns: 1fr; }
+      .tabs { justify-content: flex-start; }
+      .grid-2, .grid-3, .analysis-layout, .report-layout { grid-template-columns: 1fr; }
+      .plot { height: 470px; }
+      th, td { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Obesidad en Twitter/X Argentina</h1>
+      <p>Proyecto de análisis NLP sobre conversaciones públicas en Twitter/X. Se exploró el corpus, se limpiaron y enriquecieron los textos, se compararon modelos de tópicos y se interpretó una variante elegida con BERTopic.</p>
+      <div class="meta-line" id="projectMeta">...</div>
+    </div>
+    <nav class="tabs" aria-label="Secciones">
+      <button class="tab active" data-view="exploracion">Exploración</button>
+      <button class="tab" data-view="analisis">Análisis</button>
+      <button class="tab" data-view="reporte">Reporte final</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="loadStatus" class="panel">
+      <h2>Cargando datos</h2>
+      <p>La presentación está leyendo el archivo de datos estático. Puede tardar unos segundos la primera vez.</p>
+    </section>
+
+    <section id="exploracion" class="view active">
+      <section class="grid-2">
+        <div class="panel">
+          <h2>Corpus y limpieza</h2>
+          <p>El trabajo partió de tweets públicos asociados a obesidad/sobrepeso. La limpieza permitió separar texto original, texto normalizado, rasgos lingüísticos y variables de análisis para las etapas posteriores.</p>
+          <p class="note">En las representaciones contextuales se conservó la estructura de las frases; el filtrado de stopwords se dejó para los vectorizadores y la lectura de términos.</p>
+        </div>
+        <div class="panel">
+          <h2>Volumen temporal</h2>
+          <div id="monthsPlot" class="plot small-plot"></div>
+          <p id="timelineNote" class="note"></p>
+        </div>
+      </section>
+      <section class="grid-3">
+        <div class="panel">
+          <h2>Sentimiento</h2>
+          <div id="sentimentPlot" class="plot small-plot"></div>
+          <p id="sentimentNote" class="note"></p>
+        </div>
+        <div class="panel">
+          <h2>Hashtags</h2>
+          <div id="hashtags" class="term-list"></div>
+          <p id="hashtagsNote" class="note"></p>
+        </div>
+        <div class="panel">
+          <h2>Provincias</h2>
+          <div id="provinces" class="term-list"></div>
+          <p id="provincesNote" class="note"></p>
+        </div>
+      </section>
+      <section class="grid-2">
+        <div class="panel">
+          <h2>Sustantivos frecuentes</h2>
+          <div id="nouns" class="term-list"></div>
+          <p id="termsNote" class="note"></p>
+        </div>
+        <div class="panel">
+          <h2>Verbos frecuentes</h2>
+          <div id="verbs" class="term-list"></div>
+        </div>
+      </section>
+    </section>
+
+    <section id="analisis" class="view">
+      <div class="analysis-layout">
+        <aside class="panel">
+          <h2>Selección</h2>
+          <div class="controls">
+            <label>Modelo / variante
+              <select id="versionSelect"></select>
+            </label>
+            <label>Tópico
+              <select id="analysisTopicSelect"></select>
+            </label>
+          </div>
+          <p id="versionSummary" class="note"></p>
+        </aside>
+        <div>
+          <div id="analysisScatter" class="plot"></div>
+          <div class="grid-2" style="margin-top:14px">
+            <div class="panel">
+              <h2>Lectura del tópico</h2>
+              <p id="analysisTopicLabel">Seleccioná un tópico para ver sus términos.</p>
+              <div id="analysisTerms" class="chips" style="margin-top:12px"></div>
+            </div>
+            <div class="panel">
+              <h2>Métricas de la variante</h2>
+              <table id="selectedMetricsTable"></table>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:14px">
+            <h2>Comparación de métricas</h2>
+            <div style="overflow:auto"><table id="metricsTable"></table></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reporte" class="view">
+      <div class="report-layout">
+        <aside class="panel">
+          <h2>BERTopic elegido</h2>
+          <p>Lectura cualitativa del modelo elegido y etiquetado. El modelo detectó 28 tópicos no outlier; en este reporte se interpretaron manualmente 20.</p>
+          <p class="note">Los documentos con tópico -1 se consideran outliers. La proporción de outliers del modelo elegido es 0.377.</p>
+          <label style="margin-top:12px">Vista
+            <select id="reportTopicSelect"></select>
+          </label>
+          <div id="reportTopicList" class="topic-list" style="margin-top:12px"></div>
+        </aside>
+        <div>
+          <div id="reportScatter" class="plot"></div>
+          <div id="reportContent" style="margin-top:14px"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const palette = ["#1f7a8c", "#bf5b45", "#5d6b2f", "#3d8068", "#d08b2f", "#4c6f91", "#8a5a44", "#7b5aa6", "#9b4b64", "#67723a", "#2c6f73", "#b5693e"];
+    const fmt = new Intl.NumberFormat("es-AR");
+    const $ = id => document.getElementById(id);
+    const colorFor = topic => topic === -1 ? "#a7adb7" : palette[Math.abs(Number(topic)) % palette.length];
+    const metric = value => value === null || value === undefined || Number.isNaN(Number(value)) ? "..." : Number(value).toFixed(3);
+
+    let payload;
+    let coordsByKey = {};
+    let metaByDoc = new Map();
+    let selectedVersionId = "final_bertopic_labels";
+    let selectedAnalysisTopic = "all";
+    let selectedReportTopic = "all";
+
+    function setTab(viewId) {
+      document.querySelectorAll(".tab").forEach(button => button.classList.toggle("active", button.dataset.view === viewId));
+      document.querySelectorAll(".view").forEach(view => view.classList.toggle("active", view.id === viewId));
+      if (location.hash !== `#${viewId}`) history.replaceState(null, "", `#${viewId}`);
+      setTimeout(() => {
+        if (viewId === "analisis") renderAnalysis();
+        if (viewId === "reporte") renderReport();
+      }, 40);
+    }
+
+    function renderTermBars(id, rows) {
+      if (!rows || !rows.length) {
+        $(id).innerHTML = `<p class="note">Sin datos suficientes.</p>`;
+        return;
+      }
+      const max = Math.max(...rows.map(row => row.count), 1);
+      $(id).innerHTML = rows.slice(0, 12).map(row => `
+        <div class="term-row">
+          <span>${row.term}</span>
+          <span class="bar"><i style="width:${100 * row.count / max}%"></i></span>
+          <span>${row.count}</span>
+        </div>
+      `).join("");
+    }
+
+    function plotBars(id, rows, xKey, yKey, color) {
+      Plotly.react(id, [{
+        type: "bar",
+        x: rows.map(row => row[xKey]),
+        y: rows.map(row => row[yKey]),
+        marker: {color}
+      }], {
+        margin: {l: 42, r: 12, t: 12, b: 55},
+        paper_bgcolor: "#fff",
+        plot_bgcolor: "#fff"
+      }, {responsive: true});
+    }
+
+    function renderExploration() {
+      const overview = payload.overview;
+      $("projectMeta").textContent = `${fmt.format(overview.n_docs)} tweets analizados · ${overview.date_min} a ${overview.date_max}`;
+      plotBars("monthsPlot", overview.months, "month", "count", "#1f7a8c");
+      plotBars("sentimentPlot", Object.entries(overview.sentiment).map(([label, count]) => ({label, count})), "label", "count", "#bf5b45");
+      renderTermBars("hashtags", overview.hashtags);
+      renderTermBars("provinces", overview.provinces);
+      renderTermBars("nouns", overview.top_nouns);
+      renderTermBars("verbs", overview.top_verbs);
+      $("timelineNote").textContent = overview.notes.timeline;
+      $("sentimentNote").textContent = overview.notes.sentiment;
+      $("hashtagsNote").textContent = overview.notes.hashtags;
+      $("provincesNote").textContent = overview.notes.provinces;
+      $("termsNote").textContent = overview.notes.terms;
+    }
+
+    function currentVersion() {
+      return payload.versions.find(version => version.id === selectedVersionId) || payload.versions[0];
+    }
+
+    function coordsFor(version) {
+      return coordsByKey[version.coord_key] || coordsByKey.tfidf_texto;
+    }
+
+    function projectionTitle(version) {
+      const labels = {
+        bertopic_final_original: "BERTopic elegido",
+        tfidf_sustantivos: `${version.title} · TF-IDF de sustantivos`,
+        tfidf_texto: `${version.title} · TF-IDF de texto`,
+        sentence_bert: `${version.title} · Sentence-BERT`,
+        word2vec: `${version.title} · Word2Vec`
+      };
+      return labels[version.coord_key] || version.title;
+    }
+
+    function assignmentRows(version, topic = "all") {
+      const rows = version.assignments;
+      return topic === "all" ? rows : rows.filter(row => String(row.topic) === String(topic));
+    }
+
+    function traceFor(version, topic, selectedOnly = false) {
+      const coordMap = coordsFor(version);
+      const rows = assignmentRows(version, selectedOnly ? topic : "all");
+      return {
+        type: "scattergl",
+        mode: "markers",
+        x: rows.map(row => coordMap.get(row.doc_id)?.x),
+        y: rows.map(row => coordMap.get(row.doc_id)?.y),
+        text: rows.map(row => {
+          const meta = metaByDoc.get(row.doc_id) || {};
+          const label = version.topic_labels[String(row.topic)] || `Tópico ${row.topic}`;
+          return `${label}<br>${meta.date || ""}<br>${meta.sentiment || ""}<br>score: ${metric(row.score)}`;
+        }),
+        marker: {
+          size: selectedOnly ? 7 : 5,
+          opacity: selectedOnly ? 0.9 : 0.45,
+          color: rows.map(row => selectedOnly ? colorFor(row.topic) : (topic === "all" ? colorFor(row.topic) : "#c8ced8"))
+        },
+        hovertemplate: "%{text}<extra></extra>",
+        name: selectedOnly ? "selección" : "documentos"
+      };
+    }
+
+    function fillTopicSelect(selectId, version, includeAll) {
+      const topics = Object.entries(version.topic_counts)
+        .map(([topic, count]) => ({topic, count}))
+        .filter(row => row.topic !== "-1")
+        .sort((a, b) => Number(a.topic) - Number(b.topic));
+      const options = includeAll ? [`<option value="all">Todos los tópicos</option>`] : [];
+      $(selectId).innerHTML = options.concat(topics.map(row => {
+        const label = version.topic_labels[row.topic] || `Tópico ${row.topic}`;
+        return `<option value="${row.topic}">${label} (${fmt.format(row.count)})</option>`;
+      })).join("");
+    }
+
+    function renderMetrics() {
+      $("metricsTable").innerHTML = `
+        <thead><tr><th>variante</th><th>tópicos</th><th>outliers</th><th>NPMI</th><th>diversidad</th><th>silhouette</th></tr></thead>
+        <tbody>${payload.metrics.map(row => `
+          <tr>
+            <td>${row.method} ${row.variant}</td>
+            <td>${row.n_topics ?? ""}</td>
+            <td>${metric(row.outlier_rate)}</td>
+            <td>${metric(row.mean_npmi)}</td>
+            <td>${metric(row.topic_diversity)}</td>
+            <td>${metric(row.silhouette)}</td>
+          </tr>
+        `).join("")}</tbody>
+      `;
+    }
+
+    function renderSelectedMetrics(version) {
+      const row = payload.metrics.find(item => item.method === version.method && item.variant === version.variant);
+      if (!row) {
+        $("selectedMetricsTable").innerHTML = `<tbody><tr><td>No hay métricas específicas para esta variante.</td></tr></tbody>`;
+        return;
+      }
+      $("selectedMetricsTable").innerHTML = `
+        <tbody>
+          <tr><td>tópicos</td><td>${row.n_topics ?? ""}</td></tr>
+          <tr><td>outliers</td><td>${metric(row.outlier_rate)}</td></tr>
+          <tr><td>NPMI</td><td>${metric(row.mean_npmi)}</td></tr>
+          <tr><td>diversidad</td><td>${metric(row.topic_diversity)}</td></tr>
+          <tr><td>silhouette</td><td>${metric(row.silhouette)}</td></tr>
+        </tbody>
+      `;
+    }
+
+    function renderAnalysisControls() {
+      $("versionSelect").innerHTML = payload.versions.map(version => `<option value="${version.id}">${version.title}</option>`).join("");
+      $("versionSelect").value = selectedVersionId;
+      fillTopicSelect("analysisTopicSelect", currentVersion(), true);
+      $("analysisTopicSelect").value = selectedAnalysisTopic;
+    }
+
+    function renderAnalysis() {
+      const version = currentVersion();
+      renderAnalysisControls();
+      $("versionSummary").textContent = version.summary;
+      const topic = selectedAnalysisTopic;
+      const traces = topic === "all" ? [traceFor(version, topic)] : [traceFor(version, topic, false), traceFor(version, topic, true)];
+      Plotly.react("analysisScatter", traces, {
+        title: projectionTitle(version),
+        margin: {l: 20, r: 20, t: 55, b: 20},
+        paper_bgcolor: "#fff",
+        plot_bgcolor: "#fff",
+        xaxis: {visible: false},
+        yaxis: {visible: false},
+        showlegend: topic !== "all"
+      }, {responsive: true});
+      renderSelectedMetrics(version);
+      if (topic === "all") {
+        $("analysisTopicLabel").textContent = "Seleccioná un tópico para ver términos y lectura de esa variante.";
+        $("analysisTerms").innerHTML = "";
+        return;
+      }
+      $("analysisTopicLabel").textContent = version.topic_labels[String(topic)] || `Tópico ${topic}`;
+      $("analysisTerms").innerHTML = (version.topic_terms[String(topic)] || []).map(row => `<span class="chip">${row.term}</span>`).join("");
+    }
+
+    function reportVersion() {
+      return payload.versions.find(version => version.id === "final_bertopic_labels");
+    }
+
+    function renderReportControls() {
+      $("reportTopicSelect").innerHTML = [`<option value="all">Todos los tópicos</option>`].concat(
+        payload.final_report.map(topic => `<option value="${topic.id}">${topic.id}: ${topic.label}</option>`)
+      ).join("");
+      $("reportTopicSelect").value = selectedReportTopic;
+      $("reportTopicList").innerHTML = payload.final_report.map(topic => `
+        <button class="topic-button ${String(topic.id) === String(selectedReportTopic) ? "active" : ""}" data-topic="${topic.id}">
+          <b>${topic.id}: ${topic.label}</b>
+          <span>${fmt.format(topic.count)} documentos</span>
+        </button>
+      `).join("");
+      document.querySelectorAll(".topic-button").forEach(button => {
+        button.addEventListener("click", () => {
+          selectedReportTopic = button.dataset.topic;
+          renderReport();
+        });
+      });
+    }
+
+    function renderWordcloud(topic) {
+      if (topic.wordcloud_image) {
+        return `<img class="wordcloud-img" src="${topic.wordcloud_image}" alt="Nube de palabras del tópico ${topic.id}: ${topic.label}">`;
+      }
+      return `<p class="note">Sin nube de palabras disponible para este tópico.</p>`;
+    }
+
+    function renderTopicDetail(topic) {
+      return `
+        <div class="grid-2">
+          <div class="panel">
+            <h2>${topic.id}: ${topic.label}</h2>
+            <p>${topic.description}</p>
+            <div class="chips" style="margin-top:12px">${topic.terms.map(row => `<span class="chip">${row.term}</span>`).join("")}</div>
+          </div>
+          <div class="panel">
+            <h2>Resumen</h2>
+            <table>
+              <tbody>
+                <tr><td>documentos</td><td>${fmt.format(topic.count)}</td></tr>
+                <tr><td>probabilidad media</td><td>${metric(topic.mean_probability)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:14px">
+          <div class="panel">
+            <h2>Evolución</h2>
+            <div id="topicTimeline" class="plot small-plot"></div>
+          </div>
+          <div class="panel">
+            <h2>Nube de palabras</h2>
+            ${renderWordcloud(topic)}
+          </div>
+        </div>
+        <div class="panel" style="margin-top:14px">
+          <h2>Ejemplos representativos</h2>
+          <div class="term-list">${topic.examples.map(example => `
+            <div class="example">
+              <p>${example.text}</p>
+              <span class="note">probabilidad ${metric(example.probability)} · sentimiento ${example.sentiment}</span>
+            </div>
+          `).join("")}</div>
+        </div>
+      `;
+    }
+
+    function renderAllTopics() {
+      return `
+        <div class="panel">
+          <h2>Lectura general de tópicos</h2>
+          <p class="note">El modelo elegido detectó 28 tópicos no outlier; esta lectura desarrolla los 20 tópicos interpretados manualmente.</p>
+          <div class="grid-2">
+            ${payload.final_report.map(topic => `
+              <div class="topic-card">
+                <h3>${topic.id}: ${topic.label}</h3>
+                <p>${topic.description}</p>
+                <span class="note">${fmt.format(topic.count)} documentos · prob. media ${metric(topic.mean_probability)}</span>
+                <div class="chips">${topic.terms.slice(0, 6).map(row => `<span class="chip">${row.term}</span>`).join("")}</div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderReport() {
+      renderReportControls();
+      const version = reportVersion();
+      const topic = payload.final_report.find(row => String(row.id) === String(selectedReportTopic));
+      const traces = selectedReportTopic === "all" ? [traceFor(version, "all")] : [traceFor(version, selectedReportTopic, false), traceFor(version, selectedReportTopic, true)];
+      Plotly.react("reportScatter", traces, {
+        title: selectedReportTopic === "all" ? "BERTopic elegido · todos los tópicos" : `BERTopic elegido · ${topic.id}: ${topic.label}`,
+        margin: {l: 20, r: 20, t: 55, b: 20},
+        paper_bgcolor: "#fff",
+        plot_bgcolor: "#fff",
+        xaxis: {visible: false},
+        yaxis: {visible: false},
+        showlegend: false
+      }, {responsive: true});
+      $("reportContent").innerHTML = selectedReportTopic === "all" ? renderAllTopics() : renderTopicDetail(topic);
+      if (selectedReportTopic !== "all") {
+        Plotly.react("topicTimeline", [{
+          type: "bar",
+          x: topic.timeline.map(row => row.month),
+          y: topic.timeline.map(row => row.count),
+          marker: {color: colorFor(topic.id)}
+        }], {margin: {l: 42, r: 12, t: 12, b: 55}, paper_bgcolor: "#fff", plot_bgcolor: "#fff"}, {responsive: true});
+      }
+    }
+
+    function init(data) {
+      payload = data;
+      coordsByKey = Object.fromEntries(Object.entries(data.coordinates).map(([key, rows]) => [key, new Map(rows.map(row => [row.doc_id, row]))]));
+      metaByDoc = new Map(data.doc_meta.map(row => [row.doc_id, row]));
+      renderExploration();
+      renderMetrics();
+      renderAnalysis();
+      renderReport();
+      $("loadStatus").style.display = "none";
+      const initialView = ["exploracion", "analisis", "reporte"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "exploracion";
+      setTab(initialView);
+    }
+
+    document.querySelectorAll(".tab").forEach(button => button.addEventListener("click", () => setTab(button.dataset.view)));
+    $("versionSelect").addEventListener("change", event => {
+      selectedVersionId = event.target.value;
+      selectedAnalysisTopic = "all";
+      renderAnalysis();
+    });
+    $("analysisTopicSelect").addEventListener("change", event => {
+      selectedAnalysisTopic = event.target.value;
+      renderAnalysis();
+    });
+    $("reportTopicSelect").addEventListener("change", event => {
+      selectedReportTopic = event.target.value;
+      renderReport();
+    });
+
+    fetch(`data/portfolio_payload.json?v=${Date.now()}`, { cache: "no-store" })
+      .then(response => response.json())
+      .then(init)
+      .catch(error => {
+        $("loadStatus").innerHTML = `<h2>No se pudo cargar la presentación</h2><p>${error}</p>`;
+      });
+  </script>
+</body>
+</html>
