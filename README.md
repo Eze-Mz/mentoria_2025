@@ -1,6 +1,6 @@
 # Tweets sobre obesidad en Argentina
 
-Portfolio de análisis NLP de conversaciones públicas en Twitter/X: exploración, curación de texto, modelado de tópicos, sentimiento y lenguaje hostil.
+Portfolio de análisis NLP de conversaciones públicas de X/Twitter: exploración, curación de texto, modelado de tópicos, sentimiento y lenguaje hostil.
 
 La demo estática se publica con GitHub Pages y no muestra textos completos ni identificadores de tweets.
 

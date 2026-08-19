@@ -9,7 +9,6 @@ Las notebooks numeradas son la version curada para portfolio y lectura publica. 
 | `03a_clustering_kmeans.ipynb` | KMeans con TF-IDF, Word2Vec y Sentence-BERT; terminos representativos por cluster |
 | `03b_topic_modeling_clasico.ipynb` | NMF y LDA con barridos de topicos, metricas y ejemplos representativos |
 | `03c_bertopic_iteraciones.ipynb` | tres variantes de BERTopic con embeddings cacheados, metricas y visualizaciones |
-| `05_sentimiento_hostilidad.ipynb` | sentimiento, hostilidad y cruces por topico |
 
 `archive/` conserva entregas originales y exploraciones personales. No es la entrada recomendada para recorrer el proyecto, pero queda como trazabilidad del proceso.
 
