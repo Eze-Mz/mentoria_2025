@@ -17,6 +17,7 @@ practico_3/fasttext_twitter_custom.bin
 
 # Datos locales no publicados. La demo publica usa su propio payload en site/data/.
 /data/
+/reports/
 
 # Archivos del sistema
 .DS_Store

@@ -3,591 +3,93 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
   <title>Obesidad en Twitter/X Argentina</title>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <style>
-    :root {
-      --bg: #f5f7fa;
-      --surface: #ffffff;
-      --ink: #1c2530;
-      --muted: #667085;
-      --line: #d9e0ea;
-      --accent: #1f7a8c;
-      --accent-2: #bf5b45;
-      --accent-3: #5d6b2f;
-      --soft: #eef4f6;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--ink);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.45;
-    }
-    header {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 18px;
-      align-items: start;
-      padding: 24px clamp(16px, 4vw, 44px) 18px;
-      background: #fff;
-      border-bottom: 1px solid var(--line);
-    }
-    h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 42px); line-height: 1.08; letter-spacing: 0; }
-    h2 { margin: 0 0 12px; font-size: 20px; letter-spacing: 0; }
-    h3 { margin: 0 0 8px; font-size: 15px; letter-spacing: 0; }
-    p { margin: 0; color: var(--muted); max-width: 960px; }
-    .meta-line { margin-top: 10px; color: var(--ink); font-size: 14px; }
-    .tabs { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-    .tab, .topic-button {
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--ink);
-      border-radius: 6px;
-      cursor: pointer;
-      font: inherit;
-    }
-    .tab { min-height: 38px; padding: 0 13px; }
-    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    main { padding: 20px clamp(16px, 4vw, 44px) 44px; }
-    .view { display: none; }
-    .view.active { display: block; }
-    section { margin-bottom: 16px; }
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-    }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    .analysis-layout {
-      display: grid;
-      grid-template-columns: minmax(260px, 330px) minmax(0, 1fr);
-      gap: 14px;
-      align-items: start;
-    }
-    .report-layout {
-      display: grid;
-      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
-      gap: 14px;
-      align-items: start;
-    }
-    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
-    select {
-      width: 100%;
-      min-height: 38px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #fff;
-      color: var(--ink);
-      padding: 0 10px;
-      font: inherit;
-    }
-    .controls { display: grid; gap: 12px; }
-    .plot { width: 100%; height: 580px; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
-    .small-plot { height: 300px; }
-    .term-list { display: grid; gap: 8px; }
-    .term-row { display: grid; grid-template-columns: minmax(92px, 150px) 1fr 48px; gap: 8px; align-items: center; font-size: 13px; }
-    .bar { height: 9px; background: #dbe9ec; border-radius: 99px; overflow: hidden; }
-    .bar i { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
-    .note { color: var(--muted); font-size: 13px; margin-top: 10px; }
-    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
-    .chip { display: inline-flex; padding: 5px 8px; border-radius: 999px; background: var(--soft); color: #174e5a; font-size: 12px; }
-    .wordcloud-img { width: 100%; display: block; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: right; vertical-align: top; }
-    th:first-child, td:first-child { text-align: left; }
-    th { color: var(--muted); font-weight: 600; }
-    .topic-list { max-height: 640px; overflow: auto; display: grid; gap: 8px; }
-    .topic-button { padding: 10px; text-align: left; }
-    .topic-button.active { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
-    .topic-button b { display: block; font-size: 13px; }
-    .topic-button span { color: var(--muted); font-size: 12px; }
-    .topic-card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 12px;
-      background: #fff;
-      display: grid;
-      gap: 8px;
-    }
-    .example {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px;
-      background: #fff;
-      display: grid;
-      gap: 6px;
-    }
-    .example p { color: var(--ink); font-size: 14px; }
-    @media (max-width: 1000px) {
-      header { grid-template-columns: 1fr; }
-      .tabs { justify-content: flex-start; }
-      .grid-2, .grid-3, .analysis-layout, .report-layout { grid-template-columns: 1fr; }
-      .plot { height: 470px; }
-      th, td { white-space: normal; }
-    }
+    :root { --bg:#f7f7f4; --surface:#fff; --ink:#14213d; --muted:#667085; --line:#dce5e8; --primary:#1d5d7a; --secondary:#457b9d; --soft:#edf3f4; --negative:#b85c48; --neutral:#c99435; --positive:#477a68; }
+    * { box-sizing:border-box; } body { margin:0; overflow-x:hidden; background:var(--bg); color:var(--ink); font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+    header { padding:26px clamp(16px,4vw,48px) 18px; background:var(--surface); border-bottom:1px solid var(--line); } h1{margin:0 0 7px;font-size:clamp(29px,4vw,42px);line-height:1.1} h2{margin:0 0 11px;font-size:21px} h3{margin:0;font-size:15px} p{margin:0;color:var(--muted)} .meta{margin-top:10px;color:var(--ink);font-size:14px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:17px}.tab{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;padding:8px 13px;font:inherit;cursor:pointer}.tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+    main{padding:20px clamp(16px,4vw,48px) 48px}.view{display:none}.view.active{display:block}.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}.intro{padding:2px 0 18px;max-width:1020px}.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin-bottom:15px}.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-bottom:15px}.plot{width:100%;height:360px}.small-plot{height:285px}.map{height:410px;border:1px solid var(--line);border-radius:8px;overflow:hidden}.note,.caption{margin-top:10px;font-size:13px}.caption{color:var(--muted)}
+    .term-list{display:grid;gap:9px}.term-row{display:grid;grid-template-columns:minmax(85px,145px) 1fr 42px;gap:8px;align-items:center;font-size:13px}.bar{height:9px;background:#e4ecee;border-radius:20px;overflow:hidden}.bar i{display:block;height:100%;border-radius:inherit}.term-row.noun i{background:var(--primary)}.term-row.verb i{background:var(--secondary)}.term-row.hash i{background:var(--primary)}
+    .analysis-layout{display:grid;grid-template-columns:minmax(255px,310px) minmax(0,1fr);gap:15px;align-items:start}.control{display:grid;gap:6px;color:var(--muted);font-size:13px}.control select{width:100%;min-height:40px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:0 9px;color:var(--ink);font:inherit}.topic-checks{display:grid;gap:7px;max-height:570px;overflow:auto;margin-top:12px;padding-right:3px}.check{display:flex;gap:8px;align-items:flex-start;padding:8px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:12px;cursor:pointer}.check:has(input:checked){border-color:var(--primary);background:var(--soft)}.check input{margin:2px 0 0;accent-color:var(--primary)}.topic-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:15px;margin-top:15px}.analysis-cards{grid-template-columns:1fr}.topic-card{display:grid;gap:10px}.chip-row{display:flex;flex-wrap:wrap;gap:6px}.chip{padding:4px 7px;border-radius:999px;background:var(--soft);color:#24586c;font-size:12px}.stat-line{font-size:13px;color:var(--muted)}.sentiment-bar{display:flex;height:10px;overflow:hidden;border-radius:9px;background:#e7ecea}.sentiment-bar i{display:block;height:100%}.tip{border-bottom:1px dotted var(--muted);cursor:help}
+    table{border-collapse:collapse;width:100%;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:right}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-weight:600}.table-wrap{overflow:auto}.report-layout{display:grid;grid-template-columns:minmax(250px,310px) minmax(0,1fr);gap:15px}.topic-list{display:grid;gap:7px;max-height:540px;overflow:auto;margin-top:12px}.topic-button{padding:9px;border:1px solid var(--line);border-radius:7px;background:#fff;text-align:left;cursor:pointer;color:var(--ink)}.topic-button.active{border-color:var(--primary);box-shadow:inset 3px 0 var(--primary)}.topic-button b,.topic-button span{display:block}.topic-button span{font-size:12px;color:var(--muted);margin-top:3px}.wordcloud-wrap{min-height:300px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}.wordcloud-wrap img{display:block;max-width:100%;max-height:300px;width:auto;height:auto;object-fit:contain}.example{padding:10px;border:1px solid var(--line);border-radius:8px;margin-top:8px}.map-legend{background:rgba(255,255,255,.94);border:1px solid var(--line);padding:8px;border-radius:6px;font-size:12px;box-shadow:0 1px 4px #0002}
+    @media(max-width:900px){.grid-2,.grid-3,.analysis-layout,.report-layout{grid-template-columns:1fr}.plot{height:330px}.map{height:390px}.tabs{margin-top:13px}.topic-checks{max-height:340px}} @media(max-width:480px){main{padding:16px}.panel{padding:13px}.tab{padding:7px 10px}.plot{height:300px}}
   </style>
 </head>
 <body>
   <header>
-    <div>
-      <h1>Obesidad en Twitter/X Argentina</h1>
-      <p>Proyecto de análisis NLP sobre conversaciones públicas en Twitter/X. Se exploró el corpus, se limpiaron y enriquecieron los textos, se compararon modelos de tópicos y se interpretó una variante elegida con BERTopic.</p>
-      <div class="meta-line" id="projectMeta">...</div>
-    </div>
+    <h1>Obesidad en Twitter/X Argentina</h1>
+    <p>Proyecto de análisis NLP sobre conversaciones públicas en Twitter/X.</p>
+    <div id="projectMeta" class="meta">Cargando datos…</div>
     <nav class="tabs" aria-label="Secciones">
       <button class="tab active" data-view="exploracion">Exploración</button>
       <button class="tab" data-view="analisis">Análisis</button>
+      <button class="tab" data-view="comparacion">Comparación de modelos</button>
       <button class="tab" data-view="reporte">Reporte final</button>
     </nav>
   </header>
-
   <main>
-    <section id="loadStatus" class="panel">
-      <h2>Cargando datos</h2>
-      <p>La presentación está leyendo el archivo de datos estático. Puede tardar unos segundos la primera vez.</p>
-    </section>
-
+    <section id="loadStatus" class="panel"><h2>Cargando datos</h2><p>La presentación está leyendo el archivo de datos estático.</p></section>
     <section id="exploracion" class="view active">
-      <section class="grid-2">
-        <div class="panel">
-          <h2>Corpus y limpieza</h2>
-          <p>El trabajo partió de tweets públicos asociados a obesidad/sobrepeso. La limpieza permitió separar texto original, texto normalizado, rasgos lingüísticos y variables de análisis para las etapas posteriores.</p>
-          <p class="note">En las representaciones contextuales se conservó la estructura de las frases; el filtrado de stopwords se dejó para los vectorizadores y la lectura de términos.</p>
-        </div>
-        <div class="panel">
-          <h2>Volumen temporal</h2>
-          <div id="monthsPlot" class="plot small-plot"></div>
-          <p id="timelineNote" class="note"></p>
-        </div>
-      </section>
-      <section class="grid-3">
-        <div class="panel">
-          <h2>Sentimiento</h2>
-          <div id="sentimentPlot" class="plot small-plot"></div>
-          <p id="sentimentNote" class="note"></p>
-        </div>
-        <div class="panel">
-          <h2>Hashtags</h2>
-          <div id="hashtags" class="term-list"></div>
-          <p id="hashtagsNote" class="note"></p>
-        </div>
-        <div class="panel">
-          <h2>Provincias</h2>
-          <div id="provinces" class="term-list"></div>
-          <p id="provincesNote" class="note"></p>
-        </div>
-      </section>
-      <section class="grid-2">
-        <div class="panel">
-          <h2>Sustantivos frecuentes</h2>
-          <div id="nouns" class="term-list"></div>
-          <p id="termsNote" class="note"></p>
-        </div>
-        <div class="panel">
-          <h2>Verbos frecuentes</h2>
-          <div id="verbs" class="term-list"></div>
-        </div>
-      </section>
-    </section>
-
-    <section id="analisis" class="view">
-      <div class="analysis-layout">
-        <aside class="panel">
-          <h2>Selección</h2>
-          <div class="controls">
-            <label>Modelo / variante
-              <select id="versionSelect"></select>
-            </label>
-            <label>Tópico
-              <select id="analysisTopicSelect"></select>
-            </label>
-          </div>
-          <p id="versionSummary" class="note"></p>
-        </aside>
-        <div>
-          <div id="analysisScatter" class="plot"></div>
-          <div class="grid-2" style="margin-top:14px">
-            <div class="panel">
-              <h2>Lectura del tópico</h2>
-              <p id="analysisTopicLabel">Seleccioná un tópico para ver sus términos.</p>
-              <div id="analysisTerms" class="chips" style="margin-top:12px"></div>
-            </div>
-            <div class="panel">
-              <h2>Métricas de la variante</h2>
-              <table id="selectedMetricsTable"></table>
-            </div>
-          </div>
-          <div class="panel" style="margin-top:14px">
-            <h2>Comparación de métricas</h2>
-            <div style="overflow:auto"><table id="metricsTable"></table></div>
-          </div>
-        </div>
+      <div class="intro"><p>Se exploraron 8.882 tweets públicos sobre obesidad y sobrepeso publicados entre enero y diciembre de 2024. Se revisaron distribución temporal, señales lingüísticas, hashtags y ubicación declarada para contextualizar la conversación antes del modelado de tópicos.</p></div>
+      <div class="grid-2">
+        <article class="panel"><h2>Volumen temporal</h2><div id="monthsPlot" class="plot small-plot"></div><p id="timelineNote" class="note"></p></article>
+        <article class="panel"><h2>Sentimiento</h2><div id="sentimentPlot" class="plot small-plot"></div><p id="sentimentNote" class="note"></p></article>
+      </div>
+      <article class="panel" style="margin-bottom:15px"><h2>Actividad por hora y día</h2><div id="activityPlot" class="plot small-plot"></div><p class="caption">Frecuencia de publicación por hora y día de la semana. Es una señal descriptiva de actividad, sin ajuste de zona horaria.</p></article>
+      <article class="panel" style="margin-bottom:15px"><h2>Provincias</h2><div id="provincesMap" class="map"></div><p id="provincesNote" class="note"></p></article>
+      <div class="grid-3">
+        <article class="panel"><h2>Sustantivos frecuentes</h2><div id="nouns" class="term-list"></div><p class="caption">Términos nominales frecuentes en el corpus limpio; orientan una primera lectura de temas y actores.</p></article>
+        <article class="panel"><h2>Verbos frecuentes</h2><div id="verbs" class="term-list"></div><p class="caption">Acciones y formulaciones frecuentes; se leen como señal lingüística complementaria, no como categorías temáticas.</p></article>
+        <article class="panel"><h2>Hashtags</h2><div id="hashtags" class="term-list"></div><p id="hashtagsNote" class="caption"></p></article>
       </div>
     </section>
-
+    <section id="analisis" class="view">
+      <div class="analysis-layout">
+        <aside class="panel"><h2>Selección</h2><label class="control">Modelo / variante<select id="versionSelect"></select></label><div style="margin-top:16px"><h3>Tópicos destacados</h3><p class="caption">Elegí hasta tres de los 12 tópicos con más documentos.</p><div id="topicChecks" class="topic-checks"></div></div><p id="versionSummary" class="note"></p></aside>
+        <div><article class="panel"><div id="analysisScatter" class="plot"></div></article><section id="analysisCards" class="topic-cards analysis-cards"></section></div>
+      </div>
+    </section>
+    <section id="comparacion" class="view">
+      <article class="panel" style="margin-bottom:15px"><h2>Comparación de modelos</h2><p>Las métricas son diagnósticos, no un ranking automático: cambian con la representación, el método y la granularidad.</p><p class="note">Las variantes léxicas excluyen las palabras empleadas para recuperar el corpus antes de modelar; los modelos de embeddings conservan el texto completo. Por eso las comparaciones se leen junto con los términos, el tamaño de los grupos y la inspección cualitativa, no como un único modelo ganador.</p></article>
+      <article class="panel" style="margin-bottom:15px"><h2>Mapa de métricas</h2><div id="metricsPlot" class="plot"></div><p class="caption">NPMI resume coocurrencia de términos; silhouette aproxima separación entre grupos. El tamaño representa la cantidad de tópicos.</p></article>
+      <article class="panel"><h2>Tabla completa</h2><div class="table-wrap"><table id="metricsTable"></table></div><p class="caption">Las filas sin NPMI o diversidad quedan solo en la tabla porque no pueden ubicarse en el gráfico.</p></article>
+    </section>
     <section id="reporte" class="view">
       <div class="report-layout">
-        <aside class="panel">
-          <h2>BERTopic elegido</h2>
-          <p>Lectura cualitativa del modelo elegido y etiquetado. El modelo detectó 28 tópicos no outlier; en este reporte se interpretaron manualmente 20.</p>
-          <p class="note">Los documentos con tópico -1 se consideran outliers. La proporción de outliers del modelo elegido es 0.377.</p>
-          <label style="margin-top:12px">Vista
-            <select id="reportTopicSelect"></select>
-          </label>
-          <div id="reportTopicList" class="topic-list" style="margin-top:12px"></div>
-        </aside>
-        <div>
-          <div id="reportScatter" class="plot"></div>
-          <div id="reportContent" style="margin-top:14px"></div>
-        </div>
+        <aside class="panel"><h2>BERTopic elegido</h2><p>Lectura cualitativa del modelo elegido y etiquetado. El modelo detectó 28 tópicos no outlier; este reporte interpreta manualmente 20.</p><div id="reportTopicList" class="topic-list"></div></aside>
+        <div><article class="panel"><div id="reportScatter" class="plot"></div></article><section id="reportContent" style="margin-top:15px"></section></div>
       </div>
     </section>
   </main>
-
   <script>
-    const palette = ["#1f7a8c", "#bf5b45", "#5d6b2f", "#3d8068", "#d08b2f", "#4c6f91", "#8a5a44", "#7b5aa6", "#9b4b64", "#67723a", "#2c6f73", "#b5693e"];
-    const fmt = new Intl.NumberFormat("es-AR");
-    const $ = id => document.getElementById(id);
-    const colorFor = topic => topic === -1 ? "#a7adb7" : palette[Math.abs(Number(topic)) % palette.length];
-    const metric = value => value === null || value === undefined || Number.isNaN(Number(value)) ? "..." : Number(value).toFixed(3);
-
-    let payload;
-    let coordsByKey = {};
-    let metaByDoc = new Map();
-    let selectedVersionId = "final_bertopic_labels";
-    let selectedAnalysisTopic = "all";
-    let selectedReportTopic = "all";
-
-    function setTab(viewId) {
-      document.querySelectorAll(".tab").forEach(button => button.classList.toggle("active", button.dataset.view === viewId));
-      document.querySelectorAll(".view").forEach(view => view.classList.toggle("active", view.id === viewId));
-      if (location.hash !== `#${viewId}`) history.replaceState(null, "", `#${viewId}`);
-      setTimeout(() => {
-        if (viewId === "analisis") renderAnalysis();
-        if (viewId === "reporte") renderReport();
-      }, 40);
-    }
-
-    function renderTermBars(id, rows) {
-      if (!rows || !rows.length) {
-        $(id).innerHTML = `<p class="note">Sin datos suficientes.</p>`;
-        return;
-      }
-      const max = Math.max(...rows.map(row => row.count), 1);
-      $(id).innerHTML = rows.slice(0, 12).map(row => `
-        <div class="term-row">
-          <span>${row.term}</span>
-          <span class="bar"><i style="width:${100 * row.count / max}%"></i></span>
-          <span>${row.count}</span>
-        </div>
-      `).join("");
-    }
-
-    function plotBars(id, rows, xKey, yKey, color) {
-      Plotly.react(id, [{
-        type: "bar",
-        x: rows.map(row => row[xKey]),
-        y: rows.map(row => row[yKey]),
-        marker: {color}
-      }], {
-        margin: {l: 42, r: 12, t: 12, b: 55},
-        paper_bgcolor: "#fff",
-        plot_bgcolor: "#fff"
-      }, {responsive: true});
-    }
-
-    function renderExploration() {
-      const overview = payload.overview;
-      $("projectMeta").textContent = `${fmt.format(overview.n_docs)} tweets analizados · ${overview.date_min} a ${overview.date_max}`;
-      plotBars("monthsPlot", overview.months, "month", "count", "#1f7a8c");
-      plotBars("sentimentPlot", Object.entries(overview.sentiment).map(([label, count]) => ({label, count})), "label", "count", "#bf5b45");
-      renderTermBars("hashtags", overview.hashtags);
-      renderTermBars("provinces", overview.provinces);
-      renderTermBars("nouns", overview.top_nouns);
-      renderTermBars("verbs", overview.top_verbs);
-      $("timelineNote").textContent = overview.notes.timeline;
-      $("sentimentNote").textContent = overview.notes.sentiment;
-      $("hashtagsNote").textContent = overview.notes.hashtags;
-      $("provincesNote").textContent = overview.notes.provinces;
-      $("termsNote").textContent = overview.notes.terms;
-    }
-
-    function currentVersion() {
-      return payload.versions.find(version => version.id === selectedVersionId) || payload.versions[0];
-    }
-
-    function coordsFor(version) {
-      return coordsByKey[version.coord_key] || coordsByKey.tfidf_texto;
-    }
-
-    function projectionTitle(version) {
-      const labels = {
-        bertopic_final_original: "BERTopic elegido",
-        tfidf_sustantivos: `${version.title} · TF-IDF de sustantivos`,
-        tfidf_texto: `${version.title} · TF-IDF de texto`,
-        sentence_bert: `${version.title} · Sentence-BERT`,
-        word2vec: `${version.title} · Word2Vec`
-      };
-      return labels[version.coord_key] || version.title;
-    }
-
-    function assignmentRows(version, topic = "all") {
-      const rows = version.assignments;
-      return topic === "all" ? rows : rows.filter(row => String(row.topic) === String(topic));
-    }
-
-    function traceFor(version, topic, selectedOnly = false) {
-      const coordMap = coordsFor(version);
-      const rows = assignmentRows(version, selectedOnly ? topic : "all");
-      return {
-        type: "scattergl",
-        mode: "markers",
-        x: rows.map(row => coordMap.get(row.doc_id)?.x),
-        y: rows.map(row => coordMap.get(row.doc_id)?.y),
-        text: rows.map(row => {
-          const meta = metaByDoc.get(row.doc_id) || {};
-          const label = version.topic_labels[String(row.topic)] || `Tópico ${row.topic}`;
-          return `${label}<br>${meta.date || ""}<br>${meta.sentiment || ""}<br>score: ${metric(row.score)}`;
-        }),
-        marker: {
-          size: selectedOnly ? 7 : 5,
-          opacity: selectedOnly ? 0.9 : 0.45,
-          color: rows.map(row => selectedOnly ? colorFor(row.topic) : (topic === "all" ? colorFor(row.topic) : "#c8ced8"))
-        },
-        hovertemplate: "%{text}<extra></extra>",
-        name: selectedOnly ? "selección" : "documentos"
-      };
-    }
-
-    function fillTopicSelect(selectId, version, includeAll) {
-      const topics = Object.entries(version.topic_counts)
-        .map(([topic, count]) => ({topic, count}))
-        .filter(row => row.topic !== "-1")
-        .sort((a, b) => Number(a.topic) - Number(b.topic));
-      const options = includeAll ? [`<option value="all">Todos los tópicos</option>`] : [];
-      $(selectId).innerHTML = options.concat(topics.map(row => {
-        const label = version.topic_labels[row.topic] || `Tópico ${row.topic}`;
-        return `<option value="${row.topic}">${label} (${fmt.format(row.count)})</option>`;
-      })).join("");
-    }
-
-    function renderMetrics() {
-      $("metricsTable").innerHTML = `
-        <thead><tr><th>variante</th><th>tópicos</th><th>outliers</th><th>NPMI</th><th>diversidad</th><th>silhouette</th></tr></thead>
-        <tbody>${payload.metrics.map(row => `
-          <tr>
-            <td>${row.method} ${row.variant}</td>
-            <td>${row.n_topics ?? ""}</td>
-            <td>${metric(row.outlier_rate)}</td>
-            <td>${metric(row.mean_npmi)}</td>
-            <td>${metric(row.topic_diversity)}</td>
-            <td>${metric(row.silhouette)}</td>
-          </tr>
-        `).join("")}</tbody>
-      `;
-    }
-
-    function renderSelectedMetrics(version) {
-      const row = payload.metrics.find(item => item.method === version.method && item.variant === version.variant);
-      if (!row) {
-        $("selectedMetricsTable").innerHTML = `<tbody><tr><td>No hay métricas específicas para esta variante.</td></tr></tbody>`;
-        return;
-      }
-      $("selectedMetricsTable").innerHTML = `
-        <tbody>
-          <tr><td>tópicos</td><td>${row.n_topics ?? ""}</td></tr>
-          <tr><td>outliers</td><td>${metric(row.outlier_rate)}</td></tr>
-          <tr><td>NPMI</td><td>${metric(row.mean_npmi)}</td></tr>
-          <tr><td>diversidad</td><td>${metric(row.topic_diversity)}</td></tr>
-          <tr><td>silhouette</td><td>${metric(row.silhouette)}</td></tr>
-        </tbody>
-      `;
-    }
-
-    function renderAnalysisControls() {
-      $("versionSelect").innerHTML = payload.versions.map(version => `<option value="${version.id}">${version.title}</option>`).join("");
-      $("versionSelect").value = selectedVersionId;
-      fillTopicSelect("analysisTopicSelect", currentVersion(), true);
-      $("analysisTopicSelect").value = selectedAnalysisTopic;
-    }
-
-    function renderAnalysis() {
-      const version = currentVersion();
-      renderAnalysisControls();
-      $("versionSummary").textContent = version.summary;
-      const topic = selectedAnalysisTopic;
-      const traces = topic === "all" ? [traceFor(version, topic)] : [traceFor(version, topic, false), traceFor(version, topic, true)];
-      Plotly.react("analysisScatter", traces, {
-        title: projectionTitle(version),
-        margin: {l: 20, r: 20, t: 55, b: 20},
-        paper_bgcolor: "#fff",
-        plot_bgcolor: "#fff",
-        xaxis: {visible: false},
-        yaxis: {visible: false},
-        showlegend: topic !== "all"
-      }, {responsive: true});
-      renderSelectedMetrics(version);
-      if (topic === "all") {
-        $("analysisTopicLabel").textContent = "Seleccioná un tópico para ver términos y lectura de esa variante.";
-        $("analysisTerms").innerHTML = "";
-        return;
-      }
-      $("analysisTopicLabel").textContent = version.topic_labels[String(topic)] || `Tópico ${topic}`;
-      $("analysisTerms").innerHTML = (version.topic_terms[String(topic)] || []).map(row => `<span class="chip">${row.term}</span>`).join("");
-    }
-
-    function reportVersion() {
-      return payload.versions.find(version => version.id === "final_bertopic_labels");
-    }
-
-    function renderReportControls() {
-      $("reportTopicSelect").innerHTML = [`<option value="all">Todos los tópicos</option>`].concat(
-        payload.final_report.map(topic => `<option value="${topic.id}">${topic.id}: ${topic.label}</option>`)
-      ).join("");
-      $("reportTopicSelect").value = selectedReportTopic;
-      $("reportTopicList").innerHTML = payload.final_report.map(topic => `
-        <button class="topic-button ${String(topic.id) === String(selectedReportTopic) ? "active" : ""}" data-topic="${topic.id}">
-          <b>${topic.id}: ${topic.label}</b>
-          <span>${fmt.format(topic.count)} documentos</span>
-        </button>
-      `).join("");
-      document.querySelectorAll(".topic-button").forEach(button => {
-        button.addEventListener("click", () => {
-          selectedReportTopic = button.dataset.topic;
-          renderReport();
-        });
-      });
-    }
-
-    function renderWordcloud(topic) {
-      if (topic.wordcloud_image) {
-        return `<img class="wordcloud-img" src="${topic.wordcloud_image}" alt="Nube de palabras del tópico ${topic.id}: ${topic.label}">`;
-      }
-      return `<p class="note">Sin nube de palabras disponible para este tópico.</p>`;
-    }
-
-    function renderTopicDetail(topic) {
-      return `
-        <div class="grid-2">
-          <div class="panel">
-            <h2>${topic.id}: ${topic.label}</h2>
-            <p>${topic.description}</p>
-            <div class="chips" style="margin-top:12px">${topic.terms.map(row => `<span class="chip">${row.term}</span>`).join("")}</div>
-          </div>
-          <div class="panel">
-            <h2>Resumen</h2>
-            <table>
-              <tbody>
-                <tr><td>documentos</td><td>${fmt.format(topic.count)}</td></tr>
-                <tr><td>probabilidad media</td><td>${metric(topic.mean_probability)}</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="grid-2" style="margin-top:14px">
-          <div class="panel">
-            <h2>Evolución</h2>
-            <div id="topicTimeline" class="plot small-plot"></div>
-          </div>
-          <div class="panel">
-            <h2>Nube de palabras</h2>
-            ${renderWordcloud(topic)}
-          </div>
-        </div>
-        <div class="panel" style="margin-top:14px">
-          <h2>Ejemplos representativos</h2>
-          <div class="term-list">${topic.examples.map(example => `
-            <div class="example">
-              <p>${example.text}</p>
-              <span class="note">probabilidad ${metric(example.probability)} · sentimiento ${example.sentiment}</span>
-            </div>
-          `).join("")}</div>
-        </div>
-      `;
-    }
-
-    function renderAllTopics() {
-      return `
-        <div class="panel">
-          <h2>Lectura general de tópicos</h2>
-          <p class="note">El modelo elegido detectó 28 tópicos no outlier; esta lectura desarrolla los 20 tópicos interpretados manualmente.</p>
-          <div class="grid-2">
-            ${payload.final_report.map(topic => `
-              <div class="topic-card">
-                <h3>${topic.id}: ${topic.label}</h3>
-                <p>${topic.description}</p>
-                <span class="note">${fmt.format(topic.count)} documentos · prob. media ${metric(topic.mean_probability)}</span>
-                <div class="chips">${topic.terms.slice(0, 6).map(row => `<span class="chip">${row.term}</span>`).join("")}</div>
-              </div>
-            `).join("")}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderReport() {
-      renderReportControls();
-      const version = reportVersion();
-      const topic = payload.final_report.find(row => String(row.id) === String(selectedReportTopic));
-      const traces = selectedReportTopic === "all" ? [traceFor(version, "all")] : [traceFor(version, selectedReportTopic, false), traceFor(version, selectedReportTopic, true)];
-      Plotly.react("reportScatter", traces, {
-        title: selectedReportTopic === "all" ? "BERTopic elegido · todos los tópicos" : `BERTopic elegido · ${topic.id}: ${topic.label}`,
-        margin: {l: 20, r: 20, t: 55, b: 20},
-        paper_bgcolor: "#fff",
-        plot_bgcolor: "#fff",
-        xaxis: {visible: false},
-        yaxis: {visible: false},
-        showlegend: false
-      }, {responsive: true});
-      $("reportContent").innerHTML = selectedReportTopic === "all" ? renderAllTopics() : renderTopicDetail(topic);
-      if (selectedReportTopic !== "all") {
-        Plotly.react("topicTimeline", [{
-          type: "bar",
-          x: topic.timeline.map(row => row.month),
-          y: topic.timeline.map(row => row.count),
-          marker: {color: colorFor(topic.id)}
-        }], {margin: {l: 42, r: 12, t: 12, b: 55}, paper_bgcolor: "#fff", plot_bgcolor: "#fff"}, {responsive: true});
-      }
-    }
-
-    function init(data) {
-      payload = data;
-      coordsByKey = Object.fromEntries(Object.entries(data.coordinates).map(([key, rows]) => [key, new Map(rows.map(row => [row.doc_id, row]))]));
-      metaByDoc = new Map(data.doc_meta.map(row => [row.doc_id, row]));
-      renderExploration();
-      renderMetrics();
-      renderAnalysis();
-      renderReport();
-      $("loadStatus").style.display = "none";
-      const initialView = ["exploracion", "analisis", "reporte"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "exploracion";
-      setTab(initialView);
-    }
-
-    document.querySelectorAll(".tab").forEach(button => button.addEventListener("click", () => setTab(button.dataset.view)));
-    $("versionSelect").addEventListener("change", event => {
-      selectedVersionId = event.target.value;
-      selectedAnalysisTopic = "all";
-      renderAnalysis();
-    });
-    $("analysisTopicSelect").addEventListener("change", event => {
-      selectedAnalysisTopic = event.target.value;
-      renderAnalysis();
-    });
-    $("reportTopicSelect").addEventListener("change", event => {
-      selectedReportTopic = event.target.value;
-      renderReport();
-    });
-
-    fetch(`data/portfolio_payload.json?v=${Date.now()}`, { cache: "no-store" })
-      .then(response => response.json())
-      .then(init)
-      .catch(error => {
-        $("loadStatus").innerHTML = `<h2>No se pudo cargar la presentación</h2><p>${error}</p>`;
-      });
+    const $=id=>document.getElementById(id), fmt=new Intl.NumberFormat("es-AR"), pct=v=>`${(100*v).toFixed(1).replace(".",",")}%`;
+    const colors={primary:"#1d5d7a",secondary:"#457b9d",negative:"#b85c48",neutral:"#c99435",positive:"#477a68",muted:"#c7d1d8"};
+    const topicPalette=["#1d5d7a","#457b9d","#6f7d53","#7b5e8b","#b46d4c","#477a68","#9a6a42","#496b7a","#8b6075","#657546","#317482","#8b7051"];
+    const topicColor=t=>topicPalette[Math.abs(Number(t))%topicPalette.length], metric=v=>v==null?"—":Number(v).toFixed(3), dateLabel=m=>m?new Date(`${m}-01T12:00:00`).toLocaleDateString("es-AR",{month:"short",year:"numeric"}):"—", cleanTopicLabel=label=>String(label||"").replace(/^\s*\d+\s*:\s*/,"");
+    const provinceCenters={"buenos aires":[-36.2,-60.6],caba:[-34.604,-58.382],catamarca:[-28.47,-65.79],chubut:[-43.3,-65.1],cordoba:[-31.42,-64.18],corrientes:[-27.47,-58.84],"entre rios":[-31.73,-60.53],"la pampa":[-36.62,-64.29],mendoza:[-32.89,-68.84],misiones:[-27.37,-55.9],neuquen:[-38.95,-68.06],"rio negro":[-40.82,-63],salta:[-24.78,-65.41],"san juan":[-31.54,-68.53],"santa cruz":[-51.62,-69.22],"santa fe":[-31.63,-60.7],"tierra del fuego":[-54.8,-68.3],tucuman:[-26.81,-65.22]};
+    const provinceName=s=>String(s).replace(/\b\p{L}/gu,x=>x.toUpperCase()); let payload,coords={},meta=new Map(),map,mapLayer,selectedVersionId="final_bertopic_labels",selectedTopics=new Set(["3"]),selectedReportTopic="all";
+    function baseLayout(extra={}){return {paper_bgcolor:"#fff",plot_bgcolor:"#fff",font:{color:"#14213d"},margin:{l:46,r:20,t:28,b:42},...extra}}
+    function setTab(id){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===id));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));history.replaceState(null,"",`#${id}`);setTimeout(()=>{if(id==="analisis")renderAnalysis();if(id==="comparacion")renderComparison();if(id==="reporte")renderReport();if(id==="exploracion"&&map)map.invalidateSize();document.querySelectorAll(".view.active .plot").forEach(plot=>Plotly.Plots.resize(plot))},100)}
+    function termBars(id,rows,kind){const max=Math.max(...rows.map(x=>x.count));$(id).innerHTML=rows.slice(0,12).map(x=>`<div class="term-row ${kind}"><span>${x.term}</span><span class="bar"><i style="width:${100*x.count/max}%"></i></span><span>${fmt.format(x.count)}</span></div>`).join("")}
+    function renderMap(rows){if(!map){map=L.map("provincesMap",{scrollWheelZoom:false,fadeAnimation:false,minZoom:3,maxZoom:9}).setView([-38.4,-63.6],4);L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:20,attribution:"© OpenStreetMap © CARTO"}).addTo(map);const control=L.control({position:"bottomright"});control.onAdd=()=>{const d=L.DomUtil.create("div","map-legend");d.innerHTML="<b>Lectura del mapa</b><br>Burbujas por provincia; el tamaño refleja<br>la cantidad de tweets disponibles.";return d};control.addTo(map)}drawMap(rows)}
+    function drawMap(rows){if(mapLayer)map.removeLayer(mapLayer);mapLayer=L.layerGroup().addTo(map);rows.filter(r=>provinceCenters[r.term]).forEach(r=>{const c=provinceCenters[r.term];L.circleMarker(c,{radius:Math.max(8,Math.min(34,6+Math.sqrt(r.count)/3)),color:colors.primary,fillColor:colors.primary,fillOpacity:.68,weight:1}).bindTooltip(`<b>${provinceName(r.term)}</b><br>${fmt.format(r.count)} tweets disponibles`,{sticky:true}).addTo(mapLayer)})}
+    function renderExploration(){const o=payload.overview;$("projectMeta").textContent=`${fmt.format(o.n_docs)} tweets analizados · ${o.date_min} a ${o.date_max}`;Plotly.react("monthsPlot",[{type:"scatter",mode:"lines+markers",x:o.months.map(r=>r.month),y:o.months.map(r=>r.count),fill:"tozeroy",line:{color:colors.primary,width:3},marker:{size:6},hovertemplate:"%{x}<br>%{y:,} tweets<extra></extra>"}],baseLayout({xaxis:{tickangle:-35},yaxis:{title:"tweets",gridcolor:"#e5ecee"}}),{responsive:true});Plotly.react("sentimentPlot",[{type:"pie",labels:Object.keys(o.sentiment),values:Object.values(o.sentiment),hole:.56,marker:{colors:[colors.negative,colors.neutral,colors.positive]},textinfo:"label+percent",hovertemplate:"%{label}<br>Proporción: %{percent}<br>Cantidad: %{value:,} tweets<extra></extra>"}],baseLayout({showlegend:false,margin:{l:12,r:12,t:12,b:12}}),{responsive:true});const h=o.activity_heatmap;Plotly.react("activityPlot",[{type:"heatmap",x:h.hours.map(x=>`${String(x).padStart(2,"0")} h`),y:h.days,z:h.values,colorscale:[[0,"#edf3f4"],[.45,"#8fb4c3"],[1,"#1d5d7a"]],hovertemplate:"%{y}, %{x}<br>%{z} tweets<extra></extra>",colorbar:{title:"tweets"}}],baseLayout({margin:{l:52,r:58,t:14,b:42}}),{responsive:true});termBars("nouns",o.top_nouns,"noun");termBars("verbs",o.top_verbs,"verb");termBars("hashtags",o.hashtags,"hash");renderMap(o.provinces);$("timelineNote").textContent=o.notes.timeline;$("sentimentNote").textContent=o.notes.sentiment;$("provincesNote").textContent=o.notes.provinces;$("hashtagsNote").textContent=o.notes.hashtags}
+    function currentVersion(){return payload.versions.find(v=>v.id===selectedVersionId)||payload.versions[0]}function topicsFor(v){return Object.entries(v.topic_counts).map(([topic,count])=>({topic:String(topic),count})).filter(r=>r.topic!=="-1").sort((a,b)=>b.count-a.count).slice(0,12)}
+    function renderAnalysisControls(){const v=currentVersion();$("versionSelect").innerHTML=payload.versions.map(x=>`<option value="${x.id}">${x.title}</option>`).join("");$("versionSelect").value=v.id;$("topicChecks").innerHTML=topicsFor(v).map(r=>{const label=cleanTopicLabel(v.topic_labels[r.topic])||`Tópico ${r.topic}`;return `<label class="check"><input type="checkbox" value="${r.topic}" ${selectedTopics.has(r.topic)?"checked":""}><span>${label} <small>(${fmt.format(r.count)})</small></span></label>`}).join("");document.querySelectorAll("#topicChecks input").forEach(input=>input.addEventListener("change",e=>{if(e.target.checked&&selectedTopics.size>=3){e.target.checked=false;alert("Podés seleccionar hasta tres tópicos.");return}e.target.checked?selectedTopics.add(e.target.value):selectedTopics.delete(e.target.value);renderAnalysis()}));$("versionSummary").textContent=v.summary}
+    function coordsFor(v){return coords[v.coord_key]||coords.tfidf_texto}function detailsFor(v,t){return v.topic_details?.[String(t)]||{count:0,share_corpus:0,sentiment:{NEG:0,NEU:0,POS:0},timeline:[]}}function finalInfo(t){return payload.final_report.find(x=>String(x.id)===String(t))}function methodTermsLabel(v){if(v.method==="BERTopic")return"Términos c-TF-IDF";if(v.method==="NMF")return"Términos con mayor peso NMF (TF-IDF)";if(v.method==="LDA")return"Términos con mayor peso LDA (conteos)";return"Términos representativos del cluster (TF-IDF)"}
+    function renderAnalysis(){const v=currentVersion();renderAnalysisControls();const cm=coordsFor(v),base=v.assignments,annotations=[];const traces=[{type:"scattergl",mode:"markers",x:base.map(r=>cm.get(r.doc_id)?.x),y:base.map(r=>cm.get(r.doc_id)?.y),marker:{size:4,color:colors.muted,opacity:.43},hoverinfo:"skip",showlegend:false}];selectedTopics.forEach(t=>{const rows=base.filter(r=>String(r.topic)===t),label=cleanTopicLabel(v.topic_labels[t])||`Tópico ${t}`,x=rows.map(r=>cm.get(r.doc_id)?.x).filter(Number.isFinite),y=rows.map(r=>cm.get(r.doc_id)?.y).filter(Number.isFinite);traces.push({type:"scattergl",mode:"markers",x,y,marker:{size:7,color:topicColor(t),opacity:.9},text:rows.map(r=>`${label}<br>${(meta.get(r.doc_id)||{}).date||""}`),hovertemplate:"%{text}<extra></extra>",showlegend:false});if(x.length)annotations.push({x:x.reduce((a,b)=>a+b,0)/x.length,y:y.reduce((a,b)=>a+b,0)/y.length,text:`Tópico ${t}<br>${label.slice(0,34)}`,showarrow:false,font:{size:11,color:topicColor(t)},bgcolor:"rgba(255,255,255,.78)",borderpad:3})});Plotly.react("analysisScatter",traces,baseLayout({xaxis:{visible:false},yaxis:{visible:false},showlegend:false,annotations,margin:{l:12,r:12,t:12,b:12}}),{responsive:true});renderTopicCards(v)}
+    function renderTopicCards(v){const manualVersion=v.id==="final_bertopic_labels";const cards=[...selectedTopics].map(t=>{const d=detailsFor(v,t),info=manualVersion?finalInfo(t):null,label=cleanTopicLabel(v.topic_labels[t])||`Tópico ${t}`,terms=(v.topic_terms[t]||[]).slice(0,8),frequencies=(v.topic_term_frequencies?.[t]||[]).slice(0,8),total=Math.max(1,d.count),sent=d.sentiment||{};const evidence=manualVersion?`<p>${info?.description||"Sin descripción interpretativa disponible."}</p><span class="caption">Descripción interpretativa incluida en el análisis cualitativo del proyecto.</span><div class="chip-row">${terms.map(x=>`<span class="chip">${x.term}</span>`).join("")}</div>`:`<div class="grid-2"><div><h3>Palabras frecuentes en el grupo</h3><div class="chip-row" style="margin-top:8px">${frequencies.map(x=>`<span class="chip">${x.term} · ${fmt.format(x.count)}</span>`).join("")}</div></div><div><h3>${methodTermsLabel(v)}</h3><div class="chip-row" style="margin-top:8px">${terms.map(x=>`<span class="chip">${x.term}</span>`).join("")}</div></div></div><span class="caption">Las frecuencias se calculan sobre los documentos asignados; los términos representativos provienen del método indicado.</span>`;return `<article class="panel topic-card"><h2>Tópico ${t}: ${label}</h2>${evidence}<span class="stat-line">${fmt.format(d.count)} documentos · ${pct(d.share_corpus||0)} del corpus · pico: ${dateLabel(d.peak_month?.month)}</span><div class="sentiment-bar" title="Distribución de sentimiento"><i style="width:${100*(sent.NEG||0)/total}%;background:${colors.negative}"></i><i style="width:${100*(sent.NEU||0)/total}%;background:${colors.neutral}"></i><i style="width:${100*(sent.POS||0)/total}%;background:${colors.positive}"></i></div><span class="stat-line">NEG ${fmt.format(sent.NEG||0)} · NEU ${fmt.format(sent.NEU||0)} · POS ${fmt.format(sent.POS||0)}</span>${v.method==="BERTopic"?`<span class="stat-line"><span class="tip" title="Promedio de la probabilidad con la que BERTopic asignó documentos a este tópico. No es comparable con KMeans.">Confianza media de asignación</span>: ${metric(d.mean_assignment_confidence)}</span>`:""}<div id="topicTrend-${v.id}-${t}" class="plot" style="height:150px"></div></article>`}).join("");$("analysisCards").innerHTML=cards||`<article class="panel"><p>Elegí uno o más tópicos para ver sus cards.</p></article>`;[...selectedTopics].forEach(t=>{const d=detailsFor(v,t);Plotly.react(`topicTrend-${v.id}-${t}`,[{type:"scatter",mode:"lines",x:d.timeline.map(r=>r.month),y:d.timeline.map(r=>r.count),line:{color:topicColor(t),width:2},fill:"tozeroy",hovertemplate:"%{x}<br>%{y} documentos<extra></extra>"}],baseLayout({title:"Evolución mensual",margin:{l:32,r:8,t:25,b:28},xaxis:{tickfont:{size:10}},yaxis:{tickfont:{size:10}}}),{responsive:true})})}
+    function renderComparison(){const valid=payload.metrics.filter(r=>r.mean_npmi!=null&&r.silhouette!=null),methods=[...new Set(valid.map(r=>r.method))],methodColors={BERTopic:"#1d5d7a",KMeans:"#457b9d",NMF:"#7b5e8b",LDA:"#b46d4c"};Plotly.react("metricsPlot",methods.map(method=>{const rows=valid.filter(r=>r.method===method);return {type:"scatter",mode:"markers",name:method,x:rows.map(r=>r.mean_npmi),y:rows.map(r=>r.silhouette),marker:{size:rows.map(r=>8+Math.sqrt(r.n_topics||1)*1.2),color:methodColors[method]},text:rows.map(r=>`${r.method} · ${r.variant}<br>Tópicos: ${r.n_topics}<br>NPMI: ${metric(r.mean_npmi)}<br>Silhouette: ${metric(r.silhouette)}<br>Diversidad: ${metric(r.topic_diversity)}<br>Outliers: ${pct(r.outlier_rate)}`),hovertemplate:"%{text}<extra></extra>"}}),baseLayout({xaxis:{title:"NPMI",gridcolor:"#e5ecee"},yaxis:{title:"Silhouette",gridcolor:"#e5ecee"},legend:{orientation:"h",y:1.12}}),{responsive:true});$("metricsTable").innerHTML=`<thead><tr><th>método / variante</th><th>tópicos</th><th>outliers</th><th>NPMI</th><th>diversidad</th><th>silhouette</th></tr></thead><tbody>${payload.metrics.map(r=>`<tr><td>${r.method} · ${r.variant}</td><td>${r.n_topics??"—"}</td><td>${pct(r.outlier_rate||0)}</td><td>${metric(r.mean_npmi)}</td><td>${metric(r.topic_diversity)}</td><td>${metric(r.silhouette)}</td></tr>`).join("")}</tbody>`}
+    function reportVersion(){return payload.versions.find(v=>v.id==="final_bertopic_labels")}function renderReportControls(){const list=payload.final_report;$("reportTopicList").innerHTML=[`<button class="topic-button ${selectedReportTopic==="all"?"active":""}" data-topic="all"><b>Todos los tópicos</b><span>Vista general del modelo</span></button>`,...list.map(t=>`<button class="topic-button ${String(t.id)===String(selectedReportTopic)?"active":""}" data-topic="${t.id}"><b>${t.id}: ${t.label}</b><span>${fmt.format(t.count)} documentos</span></button>`)].join("");document.querySelectorAll(".topic-button").forEach(b=>b.addEventListener("click",()=>{selectedReportTopic=b.dataset.topic;renderReport()}))}
+    function reportDetail(t){return `<div class="grid-2"><article class="panel"><h2>${t.id}: ${t.label}</h2><p>${t.description}</p><div class="chip-row" style="margin-top:12px">${t.terms.map(x=>`<span class="chip">${x.term}</span>`).join("")}</div></article><article class="panel"><h2>Resumen</h2><table><tbody><tr><td>documentos</td><td>${fmt.format(t.count)}</td></tr><tr><td><span class="tip" title="Promedio de la probabilidad con la que BERTopic asignó documentos a este tópico.">Confianza media de asignación</span></td><td>${metric(t.mean_probability)}</td></tr></tbody></table></article></div><div class="grid-2" style="margin-top:15px"><article class="panel"><h2>Evolución</h2><div id="reportTrend" class="plot small-plot"></div></article><article class="panel"><h2>Nube de palabras</h2><div class="wordcloud-wrap"><img src="${t.wordcloud_image}" alt="Nube de palabras del tópico ${t.id}"></div></article></div><article class="panel" style="margin-top:15px"><h2>Ejemplos representativos</h2>${t.examples.map(e=>`<div class="example"><p>${e.text}</p><span class="caption">Confianza ${metric(e.probability)} · sentimiento ${e.sentiment}</span></div>`).join("")}</article>`}
+    function renderReport(){renderReportControls();const v=reportVersion(),cm=coordsFor(v),t=payload.final_report.find(x=>String(x.id)===String(selectedReportTopic)),rows=v.assignments,selected=t?rows.filter(r=>String(r.topic)===String(t.id)):[];const traces=[{type:"scattergl",mode:"markers",x:rows.map(r=>cm.get(r.doc_id)?.x),y:rows.map(r=>cm.get(r.doc_id)?.y),marker:{size:4,color:colors.muted,opacity:.45},hoverinfo:"skip",showlegend:false }];if(t)traces.push({type:"scattergl",mode:"markers",x:selected.map(r=>cm.get(r.doc_id)?.x),y:selected.map(r=>cm.get(r.doc_id)?.y),marker:{size:7,color:topicColor(t.id)},hoverinfo:"skip",showlegend:false});Plotly.react("reportScatter",traces,baseLayout({title:"BERTopic elegido",xaxis:{visible:false},yaxis:{visible:false},showlegend:false,margin:{l:12,r:12,t:38,b:12}}),{responsive:true});$("reportContent").innerHTML=t?reportDetail(t):`<article class="panel"><h2>Lectura general de tópicos</h2><div class="topic-cards">${payload.final_report.map(x=>`<article class="panel"><h3>${x.id}: ${x.label}</h3><p class="caption">${x.description}</p><span class="stat-line">${fmt.format(x.count)} documentos</span></article>`).join("")}</div></article>`;if(t)Plotly.react("reportTrend",[{type:"bar",x:t.timeline.map(r=>r.month),y:t.timeline.map(r=>r.count),marker:{color:topicColor(t.id)},hovertemplate:"%{x}<br>%{y} documentos<extra></extra>"}],baseLayout({margin:{l:38,r:8,t:15,b:42}}),{responsive:true})}
+    function init(data){payload=data;coords=Object.fromEntries(Object.entries(data.coordinates).map(([k,rows])=>[k,new Map(rows.map(r=>[r.doc_id,r]))]));meta=new Map(data.doc_meta.map(r=>[r.doc_id,r]));renderExploration();renderAnalysis();renderComparison();renderReport();$("loadStatus").style.display="none";const initial=["exploracion","analisis","comparacion","reporte"].includes(location.hash.slice(1))?location.hash.slice(1):"exploracion";setTab(initial)}
+    document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.view)));$("versionSelect").addEventListener("change",e=>{selectedVersionId=e.target.value;selectedTopics=new Set([topicsFor(currentVersion())[0]?.topic].filter(Boolean));renderAnalysis()});fetch(`data/portfolio_payload.json?v=${Date.now()}`,{cache:"no-store"}).then(r=>r.json()).then(init).catch(e=>{$("loadStatus").innerHTML=`<h2>No se pudo cargar la presentación</h2><p>${e}</p>`});
   </script>
 </body>
 </html>
